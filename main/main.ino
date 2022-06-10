@@ -1,90 +1,91 @@
 #include "MeMCore.h"
 
-#define TURNING_TIME_MS 330 // The time duration (ms) for turning
+#define irDetectorInterface A2
+#define ldrInterface A3
+#define input2A A0
+#define input2B A1
 
-#define TIMEOUT 2000       // Max microseconds to wait; choose according to max distance of wall
-#define SPEED_OF_SOUND 340 // Update according to your own experiment
-#define ULTRASONIC 12
+#define LDRWait 10  // in milliseconds
+#define RGBWait 200 // in milliseconds
 
-MeDCMotor leftMotor(M1);  // assigning leftMotor to port M1
-MeDCMotor rightMotor(M2); // assigning RightMotor to port M2
+// Define colour sensor LED pins
+int ledArray[] = {1, 2, 3}; // red is 2y3, blue is 2y2, green is 2y1
 
-uint8_t motorSpeed = 255;
-// Setting motor speed to an integer between 1 and 255
-// The larger the number, the faster the speed
+// placeholders for colour detected
+int red = 0;
+int green = 0;
+int blue = 0;
+
+// floats to hold colour arrays
+float colourArray[] = {0, 0, 0};
+float whiteArray[] = {0, 0, 0};
+float blackArray[] = {0, 0, 0};
+float greyDiff[] = {0, 0, 0};
+
+char colourStr[3][5] = {"R = ", "G = ", "B = "};
 
 void setup()
 {
-    // Any setup code here runs only once:
-    delay(2000);        // Do nothing for 10000 ms = 10 seconds
-    Serial.begin(9600); // to initialize the serial monitor
-}
+    // // setup the outputs for the colour sensor
+    // for (int c = 0; c <= 2; c++)
+    // {
+    //     pinMode(ledArray[c], OUTPUT);
+    // }
+    // pinMode(LED, OUTPUT); // Check Indicator -- OFF during Calibration
 
-float ultrasonic()
-{
-    pinMode(ULTRASONIC, OUTPUT);
-    digitalWrite(ULTRASONIC, LOW);
-    delayMicroseconds(2);
-    digitalWrite(ULTRASONIC, HIGH);
-    delayMicroseconds(10);
-    digitalWrite(ULTRASONIC, LOW);
+    // // begin serial communication
+    Serial.begin(9600);
+    pinMode(input2A, OUTPUT);
+    pinMode(input2B, OUTPUT);
 
-    pinMode(ULTRASONIC, INPUT);
-    long duration = pulseIn(ULTRASONIC, HIGH, TIMEOUT);
-    if (duration > 0)
-    {
-        return (duration / 2.0 / 1000000 * SPEED_OF_SOUND * 100);
-    }
-    else
-    {
-        return -1;
-    }
-    delay(500);
-}
-
-float irDistance(){
-    // read the voltage of the IR sensor and return the distance in cm
-    float voltage = analogRead(A2);
-//    float distance = (voltage * 5.0) / 1024.0;
-    return voltage;
-}
-
-void goForward(int leftSpeed, int rightSpeed)
-{
-    leftMotor.run(leftSpeed);
-    rightMotor.run(rightSpeed);
-    delay(150);
-    leftMotor.stop();  // Stop left motor
-    rightMotor.stop(); // Stop right motor
-    delay(1000);
+    // setBalance();            // calibration
+    // digitalWrite(LED, HIGH); // Check Indicator -- ON after Calibration
 }
 
 void loop()
 {
-    // // The main code here will run repeatedly (i.e., looping):
-    // // Going forward:
-    // leftMotor.run(-motorSpeed); // Negative: wheel turns anti-clockwise
-    // rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
-    // delay(1000);                // Keep going straight for 1000 ms
-    // leftMotor.stop();           // Stop left motor
-    // rightMotor.stop();          // Stop right motor
-    // delay(1000);                // Stop for 1000 ms
-    // float distanceToRight = ultrasonic();
-    // if (distanceToRight != -1)
-    // {
-    //     if (distanceToRight <= 4)
-    //     {
-    //         goForward(-230, 255);
-    //     }
-    //     else if (distanceToRight >= 12)
-    //     {
-    //         goForward(-255, 230);
-    //     }
-    //     else
-    //     {
-    //         goForward(-255, 255);
-    //     }
-    // }
-    Serial.println(irDistance());
-    delay(500);
+
+    turnOnRed();
+    // delay(RGBWait);
+    // int reading = getAvgReading(5); // scan 5 times and return the average,
+    // Serial.println(reading);
+    delay(2000);
+    turnOnBlue();
+    delay(2000);
+    turnOnGreen();
+    delay(2000);
+}
+
+int getAvgReading(int times)
+{
+    // find the average reading for the requested number of times of scanning LDR
+    int reading;
+    int total = 0;
+    // take the reading as many times as requested and add them up
+    for (int i = 0; i < times; i++)
+    {
+        reading = analogRead(ldrInterface);
+        total = reading + total;
+        delay(LDRWait);
+    }
+    // calculate the average and return it
+    return total / times;
+}
+
+void turnOnRed()
+{
+    digitalWrite(input2A, HIGH);
+    digitalWrite(input2B, HIGH);
+}
+
+void turnOnGreen()
+{
+    digitalWrite(input2A, HIGH);
+    digitalWrite(input2B, LOW);
+}
+
+void turnOnBlue()
+{
+    digitalWrite(input2A, LOW);
+    digitalWrite(input2B, HIGH);
 }
