@@ -45,47 +45,190 @@ void setup()
 void loop()
 {
 
-    turnOnRed();
-    // delay(RGBWait);
-    // int reading = getAvgReading(5); // scan 5 times and return the average,
-    // Serial.println(reading);
-    delay(2000);
-    turnOnBlue();
-    delay(2000);
-    turnOnGreen();
-    delay(2000);
-}
+    // executeTurning(getColour()); // get the colour and execute the turning function
 
-int getAvgReading(int times)
-{
-    // find the average reading for the requested number of times of scanning LDR
     int reading;
-    int total = 0;
-    // take the reading as many times as requested and add them up
-    for (int i = 0; i < times; i++)
+
+    Serial.println("Put the colour down ...");
+
+    delay(2000);
+
+    turnOnRed();
+    delay(RGBWait);
+    reading = getAvgReading(5); // scan 5 times and return the average,
+    Serial.print("Red = ");
+    Serial.println(reading);
+    delay(2000);
+
+    turnOnBlue();
+    delay(RGBWait);
+    reading = getAvgReading(5); // scan 5 times and return the average,
+    Serial.print("Blue = ");
+    Serial.println(reading);
+    delay(2000);
+
+    turnOnGreen();
+    delay(RGBWait);
+    reading = getAvgReading(5); // scan 5 times and return the average,
+    Serial.print("Green = ");
+    Serial.println(reading);
+    delay(2000);
+
+    // turnOnRed();
+    // delay(2000);
+    // turnOnBlue();
+    // delay(2000);
+    // turnOnGreen();
+    // delay(2000);
+}
+
+void executeTurning(int detectedColour){
+    switch (detectedColour)
     {
-        reading = analogRead(ldrInterface);
-        total = reading + total;
-        delay(LDRWait);
+    case 1:
+        blueTurn();
+        break;
+    case 2:
+        orangeTurn();
+        break;
+    case 3:
+        redTurn();
+        break;
+    case 4:
+        greenTurn();
+        break;
+    case 5:
+        purpleTurn();
+        break;
+    default:
+        Serial.println("No colour detected");
+        break;
     }
-    // calculate the average and return it
-    return total / times;
 }
 
-void turnOnRed()
+int getColour()
 {
-    digitalWrite(input2A, HIGH);
-    digitalWrite(input2B, HIGH);
+
+    return -1;
 }
 
-void turnOnGreen()
+// red: 3
+void redTurn()
 {
-    digitalWrite(input2A, HIGH);
-    digitalWrite(input2B, LOW);
+    // Turning left (on the spot):
+    leftMotor.run(motorSpeed);  // Positive: wheel turns clockwise
+    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
+    delay(TURNING_TIME_MS);     // Keep turning left for this time duration
+    leftMotor.stop();           // Stop left motor
+    rightMotor.stop();          // Stop right motor
+    delay(1000);                // Stop for 1000 ms
 }
 
-void turnOnBlue()
+// green: 4
+void greenTurn()
 {
-    digitalWrite(input2A, LOW);
-    digitalWrite(input2B, HIGH);
+    // turning right on the spot
+    leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
+    rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
+    delay(TURNING_TIME_MS);      // Keep turning left for this time duration
+    leftMotor.stop();            // Stop left motor
+    rightMotor.stop();           // Stop right motor
+    delay(1000);                 // Stop for 1000 ms
 }
+
+// orange: 2
+void orangeTurn()
+{
+    // 180 degree turn within the same grid
+    leftMotor.run(-motorSpeed + 15); // Positive: wheel turns clockwise
+    rightMotor.run(-motorSpeed);     // Positive: wheel turns clockwise
+    delay(2 * TURNING_TIME_MS);      // Keep turning left for this time duration
+    leftMotor.stop();                // Stop left motor
+    rightMotor.stop();               // Stop right motor
+    delay(1000);                     // Stop for 1000 ms
+}
+
+// purple: 5
+void purpleTurn()
+{
+    // two successive left turns in two grids
+    leftMotor.run(motorSpeed);  // Positive: wheel turns clockwise
+    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
+    delay(TURNING_TIME_MS);     // Keep turning left for this time duration
+    leftMotor.stop();           // Stop left motor
+    rightMotor.stop();          // Stop right motor
+    delay(100);                 // Stop for 1000 ms
+    // go forward
+    leftMotor.run(-motorSpeed); // Negative: wheel turns anti-clockwise
+    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
+    delay(goStraightTime);      // Keep going straight for 1000 ms
+    leftMotor.stop();           // Stop left motor
+    rightMotor.stop();          // Stop right motor
+    delay(100);                 // Stop for 1000 ms
+    // turn left again
+    leftMotor.run(motorSpeed);  // Positive: wheel turns clockwise
+    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
+    delay(TURNING_TIME_MS);     // Keep turning left for this time duration
+    leftMotor.stop();           // Stop left motor
+    rightMotor.stop();          // Stop right motor
+    delay(1000);                // Stop for 1000 ms
+}
+
+// blue: 1
+void blueTurn()
+{
+    // two successive right turns in two grids
+    leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
+    rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
+    delay(TURNING_TIME_MS);      // Keep turning left for this time duration
+    leftMotor.stop();            // Stop left motor
+    rightMotor.stop();           // Stop right motor
+    delay(100);                  // Stop for 1000 ms
+    // go forward
+    leftMotor.run(-motorSpeed); // Negative: wheel turns anti-clockwise
+    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
+    delay(goStraightTime);      // Keep going straight for 1000 ms
+    leftMotor.stop();           // Stop left motor
+    rightMotor.stop();          // Stop right motor
+    delay(100);                 // Stop for 1000 ms
+    // turn left again
+    leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
+    rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
+    delay(TURNING_TIME_MS);      // Keep turning left for this time duration
+    leftMotor.stop();            // Stop left motor
+    rightMotor.stop();           // Stop right motor
+    delay(1000);                 // Stop for 1000 ms
+
+    int getAvgReading(int times)
+    {
+        // find the average reading for the requested number of times of scanning LDR
+        int reading;
+        int total = 0;
+        // take the reading as many times as requested and add them up
+        for (int i = 0; i < times; i++)
+        {
+            reading = analogRead(ldrInterface);
+            total = reading + total;
+            delay(LDRWait);
+        }
+        // calculate the average and return it
+        return total / times;
+    }
+
+    void turnOnRed()
+    {
+        digitalWrite(input2A, HIGH);
+        digitalWrite(input2B, HIGH);
+    }
+
+    void turnOnGreen()
+    {
+        digitalWrite(input2A, HIGH);
+        digitalWrite(input2B, LOW);
+    }
+
+    void turnOnBlue()
+    {
+        digitalWrite(input2A, LOW);
+        digitalWrite(input2B, HIGH);
+    }

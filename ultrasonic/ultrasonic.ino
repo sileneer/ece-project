@@ -1,3 +1,5 @@
+#include "MeMCore.h"
+
 #define TIMEOUT 2000 // Max microseconds to wait; choose according to max distance of wall
 #define SPEED_OF_SOUND 340 // Update according to your own experiment
 #define ULTRASONIC 12
