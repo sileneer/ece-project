@@ -5,6 +5,17 @@
 #define input2A A0
 #define input2B A1
 
+#define TURNING_TIME_MS 330 // The time duration (ms) for turning
+MeDCMotor leftMotor(M1);    // assigning leftMotor to port M1
+MeDCMotor rightMotor(M2);   // assigning RightMotor to port M2
+int goStraightTime = 1000;
+// from ultrasound code
+#define TIMEOUT 2000       // Max microseconds to wait; choose according to max distance of wall
+#define SPEED_OF_SOUND 340 // Update according to your own experiment
+#define ULTRASONIC 12
+
+uint8_t motorSpeed = 255;
+
 #define LDRWait 10  // in milliseconds
 #define RGBWait 200 // in milliseconds
 
@@ -23,94 +34,6 @@ float blackArray[] = {0, 0, 0};
 float greyDiff[] = {0, 0, 0};
 
 char colourStr[3][5] = {"R = ", "G = ", "B = "};
-
-void setup()
-{
-    // // setup the outputs for the colour sensor
-    // for (int c = 0; c <= 2; c++)
-    // {
-    //     pinMode(ledArray[c], OUTPUT);
-    // }
-    // pinMode(LED, OUTPUT); // Check Indicator -- OFF during Calibration
-
-    // // begin serial communication
-    Serial.begin(9600);
-    pinMode(input2A, OUTPUT);
-    pinMode(input2B, OUTPUT);
-
-    // setBalance();            // calibration
-    // digitalWrite(LED, HIGH); // Check Indicator -- ON after Calibration
-}
-
-void loop()
-{
-
-    // executeTurning(getColour()); // get the colour and execute the turning function
-
-    int reading;
-
-    Serial.println("Put the colour down ...");
-
-    delay(2000);
-
-    turnOnRed();
-    delay(RGBWait);
-    reading = getAvgReading(5); // scan 5 times and return the average,
-    Serial.print("Red = ");
-    Serial.println(reading);
-    delay(2000);
-
-    turnOnBlue();
-    delay(RGBWait);
-    reading = getAvgReading(5); // scan 5 times and return the average,
-    Serial.print("Blue = ");
-    Serial.println(reading);
-    delay(2000);
-
-    turnOnGreen();
-    delay(RGBWait);
-    reading = getAvgReading(5); // scan 5 times and return the average,
-    Serial.print("Green = ");
-    Serial.println(reading);
-    delay(2000);
-
-    // turnOnRed();
-    // delay(2000);
-    // turnOnBlue();
-    // delay(2000);
-    // turnOnGreen();
-    // delay(2000);
-}
-
-void executeTurning(int detectedColour){
-    switch (detectedColour)
-    {
-    case 1:
-        blueTurn();
-        break;
-    case 2:
-        orangeTurn();
-        break;
-    case 3:
-        redTurn();
-        break;
-    case 4:
-        greenTurn();
-        break;
-    case 5:
-        purpleTurn();
-        break;
-    default:
-        Serial.println("No colour detected");
-        break;
-    }
-}
-
-int getColour()
-{
-
-    return -1;
-}
 
 // red: 3
 void redTurn()
@@ -198,37 +121,168 @@ void blueTurn()
     leftMotor.stop();            // Stop left motor
     rightMotor.stop();           // Stop right motor
     delay(1000);                 // Stop for 1000 ms
+}
 
-    int getAvgReading(int times)
+void setup()
+{
+    // // setup the outputs for the colour sensor
+    // for (int c = 0; c <= 2; c++)
+    // {
+    //     pinMode(ledArray[c], OUTPUT);
+    // }
+    // pinMode(LED, OUTPUT); // Check Indicator -- OFF during Calibration
+
+    // // begin serial communication
+    Serial.begin(9600);
+    pinMode(input2A, OUTPUT);
+    pinMode(input2B, OUTPUT);
+
+    // setBalance();            // calibration
+    // digitalWrite(LED, HIGH); // Check Indicator -- ON after Calibration
+}
+
+void loop()
+{
+
+    int currentColour = getColour();
+    Serial.println(currentColour);
+
+    // executeTurning(getColour()); // get the colour and execute the turning function
+}
+
+void executeTurning(int detectedColour)
+{
+    switch (detectedColour)
     {
-        // find the average reading for the requested number of times of scanning LDR
-        int reading;
-        int total = 0;
-        // take the reading as many times as requested and add them up
-        for (int i = 0; i < times; i++)
+    case 1:
+        blueTurn();
+        break;
+    case 2:
+        orangeTurn();
+        break;
+    case 3:
+        redTurn();
+        break;
+    case 4:
+        greenTurn();
+        break;
+    case 5:
+        purpleTurn();
+        break;
+    default:
+        Serial.println("No colour detected");
+        break;
+    }
+}
+
+/* return:
+ * 1: blue
+ * 2: orange
+ * 3: red
+ * 4: green
+ * 5: purple
+ * 6: white
+ */
+
+int *getColour()
+{
+    Serial.println("Put the colour down ...");
+
+    delay(2000);
+
+    int redValue = turnOnRed();
+    delay(2000);
+
+    int blueValue = turnOnBlue();
+    delay(2000);
+
+    int greenValue = turnOnGreen();
+    delay(2000);
+
+    int readings[3] = {redValue, blueValue, greenValue};
+
+    // blue, orange, red, green, purple
+    int calibratedReadings[5][3] = {{819, 645, 776},
+                                    {897, 699, 646},
+                                    {888, 640, 612},
+                                    {800, 622, 654},
+                                    {836, 631, 715}};
+
+    float results[5];
+    for (int i = 0; i < 5; i++)
+    {
+        results[i] = calculateDistance(readings, calibratedReadings[i]);
+    }
+
+    int minIndex = 0;
+    for (int i = 0; i < 5; i++)
+    {
+        if (results[i] < results[minIndex])
         {
-            reading = analogRead(ldrInterface);
-            total = reading + total;
-            delay(LDRWait);
+            minIndex = i;
         }
-        // calculate the average and return it
-        return total / times;
     }
+    return minIndex + 1;
+}
 
-    void turnOnRed()
+float calculateDistance(int *readings, int *calibratedReadings)
+{
+    float distance = 0;
+    for (int i = 0; i < 3; i++)
     {
-        digitalWrite(input2A, HIGH);
-        digitalWrite(input2B, HIGH);
+        distance += pow(readings[i] - calibratedReadings[i], 2);
     }
+    return sqrt(distance);
+}
 
-    void turnOnGreen()
+int getAvgReading(int times)
+{
+    // find the average reading for the requested number of times of scanning LDR
+    int reading;
+    int total = 0;
+    // take the reading as many times as requested and add them up
+    for (int i = 0; i < times; i++)
     {
-        digitalWrite(input2A, HIGH);
-        digitalWrite(input2B, LOW);
+        reading = analogRead(ldrInterface);
+        total = reading + total;
+        delay(LDRWait);
     }
+    // calculate the average and return it
+    return total / times;
+}
 
-    void turnOnBlue()
-    {
-        digitalWrite(input2A, LOW);
-        digitalWrite(input2B, HIGH);
-    }
+int turnOnRed()
+{
+    digitalWrite(input2A, HIGH);
+    digitalWrite(input2B, HIGH);
+
+    delay(RGBWait);
+    int red = getAvgReading(5); // scan 5 times and return the average,
+    Serial.print("Red = ");
+    Serial.println(red);
+    return red;
+}
+
+int turnOnBlue()
+{
+    digitalWrite(input2A, HIGH);
+    digitalWrite(input2B, LOW);
+
+    delay(RGBWait);
+    int blue = getAvgReading(5); // scan 5 times and return the average,
+    Serial.print("Blue = ");
+    Serial.println(blue);
+    return blue;
+}
+
+int turnOnGreen()
+{
+    digitalWrite(input2A, LOW);
+    digitalWrite(input2B, HIGH);
+
+    delay(RGBWait);
+    int green = getAvgReading(5); // scan 5 times and return the average,
+    Serial.print("Green = ");
+    Serial.println(green);
+    return green;
+}
