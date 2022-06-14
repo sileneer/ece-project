@@ -66,20 +66,10 @@ void setup()
 
 void loop()
 {
-    int currentColour = getColour();
-    Serial.println(currentColour);
+    getColour();
 }
 
-/* return:
- * 1: blue
- * 2: orange
- * 3: red
- * 4: green
- * 5: purple
- * 6: white
- */
-
-int getColour()
+void getColour()
 {
     Serial.println("Put the colour down ...");
 
@@ -93,40 +83,6 @@ int getColour()
 
     int greenValue = turnOnGreen();
     delay(200);
-
-    int readings[3] = {redValue, blueValue, greenValue};
-
-    // blue, orange, red, green, purple
-    int calibratedReadings[5][3] = {{868, 923, 680},
-                                    {925, 818, 720},
-                                    {918, 812, 640},
-                                    {850, 833, 629},
-                                    {879, 885, 640}};
-    float results[5];
-    for (int i = 0; i < 5; i++)
-    {
-        results[i] = calculateDistance(readings, calibratedReadings[i]);
-    }
-
-    int minIndex = 0;
-    for (int i = 0; i < 5; i++)
-    {
-        if (results[i] < results[minIndex])
-        {
-            minIndex = i;
-        }
-    }
-    return minIndex + 1;
-}
-
-float calculateDistance(int *readings, int *calibratedReadings)
-{
-    float distance = 0;
-    for (int i = 0; i < 3; i++)
-    {
-        distance += pow(readings[i] - calibratedReadings[i], 2);
-    }
-    return sqrt(distance);
 }
 
 int getAvgReading(int times)
