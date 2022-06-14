@@ -24,7 +24,7 @@ int goStraightTime = 900;
 
 const uint8_t leftMotorSpeed = 225;
 const uint8_t rightMotorSpeed = 255;
-uint8_t motorSpeed = 255;
+const uint8_t motorSpeed = 255;
 
 #define LDRWait 10  // in milliseconds
 #define RGBWait 200 // in milliseconds
