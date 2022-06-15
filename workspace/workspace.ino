@@ -200,7 +200,7 @@ void loop()
     if (lineSensorOutput == HIGH)
     {
 
-        int alignment = 0; // -2: extreme left, -1: left, 0: center, 1: right, 2: extreme right
+        int alignment = 0; // -2: left, -1: slightly left, 0: center, 1: slightly right, 2: right, 3: extreme right
 
         float distanceToLeft = irDistance();
         float distanceToRight = ultrasonicDistance();
