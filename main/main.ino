@@ -1,34 +1,33 @@
 #include "MeMCore.h"
 
-MeBuzzer buzzer;
+#define INPUT_2A A0
+#define INPUT_2B A1
+#define IR_DETECTOR_INTERFACE A2
+#define LDR_INTERFACE A3
 
-MeLineFollower lineFinder(PORT_2); // assigning lineFinder to RJ25 port 2
-float readVal;
-int delayTime = 30;
-float lineSensorOutput;
+#define LINE_SENSOR_INTERFACE 10
+#define ULTRASONIC_INTERFACE 12
 
-#define input2A A0
-#define input2B A1
-#define irDetectorInterface A2
-#define ldrInterface A3
-#define lineSensorInterface 10
+#define TURNING_TIME_MS 360 // The time duration (ms) for turning
 
-#define TURNING_TIME_MS 368 // The time duration (ms) for turning
-MeDCMotor leftMotor(M1);    // assigning leftMotor to port M1
-MeDCMotor rightMotor(M2);   // assigning RightMotor to port M2
-int goStraightTime = 850;
-// from ultrasound code
 #define TIMEOUT 2000       // Max microseconds to wait; choose according to max distance of wall
 #define SPEED_OF_SOUND 340 // Update according to your own experiment
-#define ULTRASONIC 12
-
-const uint8_t leftMotorSpeed = 225;
-const uint8_t rightMotorSpeed = 255;
-const uint8_t motorSpeed = 255;
 
 #define LDRWait 10  // in milliseconds
 #define RGBWait 200 // in milliseconds
 
+MeBuzzer buzzer;
+MeLineFollower lineFinder(PORT_2); // assigning lineFinder to RJ25 port 2
+
+float lineSensorOutput;
+
+MeDCMotor leftMotor(M1);  // assigning leftMotor to port M1
+MeDCMotor rightMotor(M2); // assigning RightMotor to port M2
+int goStraightTime = 850;
+
+const uint8_t leftMotorSpeed = 225;
+const uint8_t rightMotorSpeed = 255;
+const uint8_t motorSpeed = 255;
 
 // red: 3
 void redTurn()
@@ -39,7 +38,7 @@ void redTurn()
     delay(TURNING_TIME_MS);     // Keep turning left for this time duration
     leftMotor.stop();           // Stop left motor
     rightMotor.stop();          // Stop right motor
-    delay(50);                  // Stop for 1000 ms
+    delay(10);                  // Stop for 1000 ms
 }
 
 // green: 4
@@ -51,7 +50,7 @@ void greenTurn()
     delay(TURNING_TIME_MS);      // Keep turning left for this time duration
     leftMotor.stop();            // Stop left motor
     rightMotor.stop();           // Stop right motor
-    delay(50);                   // Stop for 1000 ms
+    delay(10);                   // Stop for 1000 ms
 }
 
 // orange: 2
@@ -63,7 +62,7 @@ void orangeTurn()
     delay(2 * TURNING_TIME_MS);      // Keep turning left for this time duration
     leftMotor.stop();                // Stop left motor
     rightMotor.stop();               // Stop right motor
-    delay(50);                       // Stop for 1000 ms
+    delay(10);                       // Stop for 1000 ms
 }
 
 // purple: 5
@@ -75,21 +74,21 @@ void purpleTurn()
     delay(TURNING_TIME_MS);     // Keep turning left for this time duration
     leftMotor.stop();           // Stop left motor
     rightMotor.stop();          // Stop right motor
-    delay(50);                  // Stop for 1000 ms
+    delay(5);                   // Stop for 1000 ms
     // go forward
     leftMotor.run(-motorSpeed); // Negative: wheel turns anti-clockwise
     rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
     delay(goStraightTime);      // Keep going straight for 1000 ms
     leftMotor.stop();           // Stop left motor
     rightMotor.stop();          // Stop right motor
-    delay(50);                  // Stop for 1000 ms
+    delay(5);                   // Stop for 1000 ms
     // turn left again
-    leftMotor.run(motorSpeed);  // Positive: wheel turns clockwise
-    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
-    delay(TURNING_TIME_MS);     // Keep turning left for this time duration
-    leftMotor.stop();           // Stop left motor
-    rightMotor.stop();          // Stop right motor
-    delay(50);                  // Stop for 1000 ms
+    leftMotor.run(motorSpeed);   // Positive: wheel turns clockwise
+    rightMotor.run(motorSpeed);  // Positive: wheel turns clockwise
+    delay(TURNING_TIME_MS + 20); // Keep turning left for this time duration
+    leftMotor.stop();            // Stop left motor
+    rightMotor.stop();           // Stop right motor
+    delay(5);                    // Stop for 1000 ms
 }
 
 // blue: 1
@@ -101,34 +100,34 @@ void blueTurn()
     delay(TURNING_TIME_MS);      // Keep turning left for this time duration
     leftMotor.stop();            // Stop left motor
     rightMotor.stop();           // Stop right motor
-    delay(50);                   // Stop for 1000 ms
+    delay(5);                    // Stop for 1000 ms
     // go forward
     leftMotor.run(-motorSpeed); // Negative: wheel turns anti-clockwise
     rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
     delay(goStraightTime);      // Keep going straight for 1000 ms
     leftMotor.stop();           // Stop left motor
     rightMotor.stop();          // Stop right motor
-    delay(50);                  // Stop for 1000 ms
+    delay(5);                   // Stop for 1000 ms
     // turn left again
     leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
     rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
     delay(TURNING_TIME_MS);      // Keep turning left for this time duration
     leftMotor.stop();            // Stop left motor
     rightMotor.stop();           // Stop right motor
-    delay(50);                   // Stop for 1000 ms
+    delay(5);                    // Stop for 1000 ms
 }
 
 float ultrasonicDistance()
 {
-    pinMode(ULTRASONIC, OUTPUT);
-    digitalWrite(ULTRASONIC, LOW);
+    pinMode(ULTRASONIC_INTERFACE, OUTPUT);
+    digitalWrite(ULTRASONIC_INTERFACE, LOW);
     delayMicroseconds(2);
-    digitalWrite(ULTRASONIC, HIGH);
+    digitalWrite(ULTRASONIC_INTERFACE, HIGH);
     delayMicroseconds(10);
-    digitalWrite(ULTRASONIC, LOW);
+    digitalWrite(ULTRASONIC_INTERFACE, LOW);
 
-    pinMode(ULTRASONIC, INPUT);
-    long duration = pulseIn(ULTRASONIC, HIGH, TIMEOUT);
+    pinMode(ULTRASONIC_INTERFACE, INPUT);
+    long duration = pulseIn(ULTRASONIC_INTERFACE, HIGH, TIMEOUT);
     if (duration > 0)
     {
         return (duration / 2.0 / 1000000 * SPEED_OF_SOUND * 100);
@@ -137,28 +136,26 @@ float ultrasonicDistance()
     {
         return -1;
     }
-    delay(10);
 }
 
 float irDistance()
 {
-    digitalWrite(input2A, HIGH);
-    digitalWrite(input2B, HIGH);
+    digitalWrite(INPUT_2A, HIGH);
+    digitalWrite(INPUT_2B, HIGH);
     delay(5);
 
-    float initial_reading = analogRead(irDetectorInterface) * 5.0 / 1024.0;
+    float initial_reading = analogRead(IR_DETECTOR_INTERFACE) * 5.0 / 1024.0;
     // Serial.print("off:");
     // Serial.println(initial_reading);
     delay(5);
 
-    digitalWrite(input2A, LOW);
-    digitalWrite(input2B, LOW);
+    digitalWrite(INPUT_2A, LOW);
+    digitalWrite(INPUT_2B, LOW);
     delay(5);
 
-    float final_reading = analogRead(irDetectorInterface) * 5.0 / 1024.0;
+    float final_reading = analogRead(IR_DETECTOR_INTERFACE) * 5.0 / 1024.0;
     // Serial.print("on:");
     // Serial.println(final_reading);
-    delay(5);
     return initial_reading - final_reading;
 }
 
@@ -166,37 +163,28 @@ void goForward(int leftSpeed, int rightSpeed)
 {
     leftMotor.run(leftSpeed);
     rightMotor.run(rightSpeed);
-    delay(delayTime);
+    delay(30);
 }
 
 void setup()
 {
-    // // setup the outputs for the colour sensor
-    // for (int c = 0; c <= 2; c++)
-    // {
-    //     pinMode(ledArray[c], OUTPUT);
-    // }
-    // pinMode(LED, OUTPUT); // Check Indicator -- OFF during Calibration
-
-    // // begin serial communication
+    // begin serial communication
     Serial.begin(9600);
-    pinMode(input2A, OUTPUT);
-    pinMode(input2B, OUTPUT);
+    pinMode(INPUT_2A, OUTPUT);
+    pinMode(INPUT_2B, OUTPUT);
 
-    pinMode(irDetectorInterface, INPUT);
-    pinMode(lineSensorInterface, INPUT);
-
-    // setBalance();            // calibration
-    // digitalWrite(LED, HIGH); // Check Indicator -- ON after Calibration
+    pinMode(IR_DETECTOR_INTERFACE, INPUT);
+    pinMode(LDR_INTERFACE, INPUT);
+    pinMode(LINE_SENSOR_INTERFACE, INPUT);
 }
 
 void loop()
 {
 
     // line sensor
-    readVal = digitalRead(lineSensorInterface);
+    lineSensorOutput = digitalRead(LINE_SENSOR_INTERFACE);
 
-    if (readVal == HIGH)
+    if (lineSensorOutput == HIGH)
     {
 
         int alignment = 0; // -2: extreme left, -1: left, 0: center, 1: right, 2: extreme right
@@ -204,7 +192,7 @@ void loop()
         float distanceToLeft = irDistance();
         float distanceToRight = ultrasonicDistance();
 
-        // Serial.println("distanceToLeft: " + String(distanceToLeft));
+        Serial.println("distanceToLeft: " + String(distanceToLeft));
         // Serial.println("distanceToRight: " + String(distanceToRight));
 
         if (distanceToRight <= 10 && distanceToRight != -1)
@@ -215,12 +203,16 @@ void loop()
                 alignment = 2;
             }
         }
-        if (distanceToLeft >= 2.70)
+        if (distanceToLeft >= 0.99)
         {
             alignment = -1;
-            if (distanceToLeft >= 2.77)
+            if (distanceToLeft >= 1.03)
             {
                 alignment = -2;
+                if (distanceToLeft >= 1.04)
+                {
+                    alignment = -3;
+                }
             }
         }
 
@@ -238,20 +230,24 @@ void loop()
             goForward(-leftMotorSpeed + 50, rightMotorSpeed);
             break;
         case -1:
-            goForward(-leftMotorSpeed, rightMotorSpeed - 30);
+            goForward(-leftMotorSpeed, rightMotorSpeed - 40);
             break;
         case -2:
-            goForward(-leftMotorSpeed, rightMotorSpeed - 50);
+            goForward(-leftMotorSpeed, rightMotorSpeed - 70);
+            break;
+        case -3:
+            goForward(-leftMotorSpeed, rightMotorSpeed - 90);
+            break;
         default:
             goForward(-leftMotorSpeed, rightMotorSpeed);
             break;
         }
     }
-    else if (readVal == LOW)
+    else if (lineSensorOutput == LOW)
     {                      // If push button is pushed, the value will be very low
         leftMotor.stop();  // Stop left motor
         rightMotor.stop(); // Stop right motor
-        delay(50);        // Delay 500ms so that a button push won't be counted multiple times.
+        delay(10);         // Delay 500ms so that a button push won't be counted multiple times.
         int currentColour = getColour();
         Serial.println(currentColour);
         executeTurning(getColour()); // get the colour and execute the turning function
@@ -300,23 +296,23 @@ int getColour()
     Serial.println("Put the colour down ...");
 
     int redValue = turnOnRed();
-    delay(10);
+    delay(5);
 
     int blueValue = turnOnBlue();
-    delay(10);
+    delay(5);
 
     int greenValue = turnOnGreen();
-    delay(10);
+    delay(5);
 
     int readings[3] = {redValue, blueValue, greenValue};
 
     // blue, orange, red, green, purple, white
-    int calibratedReadings[6][3] = {{897, 743, 928},
-                                    {930, 769, 816},
-                                    {924, 720, 807},
-                                    {886, 713, 844},
-                                    {901, 719, 891},
-                                    {931, 816, 943}};
+    int calibratedReadings[6][3] = {{911, 757, 932},
+                                    {935, 776, 827},
+                                    {931, 732, 823},
+                                    {904, 735, 853},
+                                    {914, 739, 900},
+                                    {937, 822, 946}};
     float results[6];
     for (int i = 0; i < 6; i++)
     {
@@ -366,7 +362,7 @@ int getAvgReading(int times)
     // take the reading as many times as requested and add them up
     for (int i = 0; i < times; i++)
     {
-        reading = analogRead(ldrInterface);
+        reading = analogRead(LDR_INTERFACE);
         total = reading + total;
         delay(LDRWait);
     }
@@ -376,8 +372,8 @@ int getAvgReading(int times)
 
 int turnOnRed()
 {
-    digitalWrite(input2A, HIGH);
-    digitalWrite(input2B, HIGH);
+    digitalWrite(INPUT_2A, HIGH);
+    digitalWrite(INPUT_2B, HIGH);
 
     delay(RGBWait);
     int red = getAvgReading(5); // scan 5 times and return the average,
@@ -388,8 +384,8 @@ int turnOnRed()
 
 int turnOnBlue()
 {
-    digitalWrite(input2A, HIGH);
-    digitalWrite(input2B, LOW);
+    digitalWrite(INPUT_2A, HIGH);
+    digitalWrite(INPUT_2B, LOW);
 
     delay(RGBWait);
     int blue = getAvgReading(5); // scan 5 times and return the average,
@@ -400,8 +396,8 @@ int turnOnBlue()
 
 int turnOnGreen()
 {
-    digitalWrite(input2A, LOW);
-    digitalWrite(input2B, HIGH);
+    digitalWrite(INPUT_2A, LOW);
+    digitalWrite(INPUT_2B, HIGH);
 
     delay(RGBWait);
     int green = getAvgReading(5); // scan 5 times and return the average,
