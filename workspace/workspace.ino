@@ -8,7 +8,7 @@
 #define LINE_SENSOR_INTERFACE 10
 #define ULTRASONIC_INTERFACE 12
 
-#define TURNING_TIME_MS 360 // The time duration (ms) for turning
+#define TURNING_TIME_MS 355 // The time duration (ms) for turning
 
 #define TIMEOUT 2000       // Max microseconds to wait; choose according to max distance of wall
 #define SPEED_OF_SOUND 340 // Update according to your own experiment
@@ -56,13 +56,26 @@ void greenTurn()
 // orange: 2
 void orangeTurn()
 {
-    // 180 degree turn within the same grid
-    leftMotor.run(-motorSpeed + 15); // Positive: wheel turns clockwise
-    rightMotor.run(-motorSpeed);     // Positive: wheel turns clockwise
-    delay(2 * TURNING_TIME_MS);      // Keep turning left for this time duration
-    leftMotor.stop();                // Stop left motor
-    rightMotor.stop();               // Stop right motor
-    delay(10);                       // Stop for 1000 ms
+    if (ultrasonicDistance() >= 10)
+    {
+        // 180 degree turn within the same grid
+        leftMotor.run(-motorSpeed + 15); // Positive: wheel turns clockwise
+        rightMotor.run(-motorSpeed);     // Positive: wheel turns clockwise
+        delay(2 * TURNING_TIME_MS);      // Keep turning left for this time duration
+        leftMotor.stop();                // Stop left motor
+        rightMotor.stop();               // Stop right motor
+        delay(10);                       // Stop for 1000 ms
+    }
+    else
+    {
+        // 180 degree turn within the same grid
+        leftMotor.run(motorSpeed - 15); // Positive: wheel turns clockwise
+        rightMotor.run(motorSpeed);     // Positive: wheel turns clockwise
+        delay(2 * TURNING_TIME_MS);     // Keep turning left for this time duration
+        leftMotor.stop();               // Stop left motor
+        rightMotor.stop();              // Stop right motor
+        delay(10);                      // Stop for 1000 ms
+    }
 }
 
 // purple: 5
@@ -76,12 +89,12 @@ void purpleTurn()
     rightMotor.stop();          // Stop right motor
     delay(5);                   // Stop for 1000 ms
     // go forward
-    leftMotor.run(-motorSpeed); // Negative: wheel turns anti-clockwise
-    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
-    delay(goStraightTime);      // Keep going straight for 1000 ms
-    leftMotor.stop();           // Stop left motor
-    rightMotor.stop();          // Stop right motor
-    delay(5);                   // Stop for 1000 ms
+    leftMotor.run(-leftMotorSpeed);  // Negative: wheel turns anti-clockwise
+    rightMotor.run(rightMotorSpeed); // Positive: wheel turns clockwise
+    delay(goStraightTime + 100);     // Keep going straight for 1000 ms
+    leftMotor.stop();                // Stop left motor
+    rightMotor.stop();               // Stop right motor
+    delay(5);                        // Stop for 1000 ms
     // turn left again
     leftMotor.run(motorSpeed);   // Positive: wheel turns clockwise
     rightMotor.run(motorSpeed);  // Positive: wheel turns clockwise
@@ -97,21 +110,21 @@ void blueTurn()
     // two successive right turns in two grids
     leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
     rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
-    delay(TURNING_TIME_MS);      // Keep turning left for this time duration
+    delay(TURNING_TIME_MS + 20); // Keep turning left for this time duration
     leftMotor.stop();            // Stop left motor
     rightMotor.stop();           // Stop right motor
     delay(5);                    // Stop for 1000 ms
     // go forward
-    leftMotor.run(-motorSpeed); // Negative: wheel turns anti-clockwise
-    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
-    delay(goStraightTime);      // Keep going straight for 1000 ms
-    leftMotor.stop();           // Stop left motor
-    rightMotor.stop();          // Stop right motor
-    delay(5);                   // Stop for 1000 ms
+    leftMotor.run(-leftMotorSpeed);  // Negative: wheel turns anti-clockwise
+    rightMotor.run(rightMotorSpeed); // Positive: wheel turns clockwise
+    delay(goStraightTime);           // Keep going straight for 1000 ms
+    leftMotor.stop();                // Stop left motor
+    rightMotor.stop();               // Stop right motor
+    delay(5);                        // Stop for 1000 ms
     // turn left again
     leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
     rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
-    delay(TURNING_TIME_MS);      // Keep turning left for this time duration
+    delay(TURNING_TIME_MS + 20); // Keep turning left for this time duration
     leftMotor.stop();            // Stop left motor
     rightMotor.stop();           // Stop right motor
     delay(5);                    // Stop for 1000 ms
@@ -201,15 +214,18 @@ void loop()
             if (distanceToRight <= 7)
             {
                 alignment = 2;
+                if (distanceToRight <= 6)
+                {
+                    alignment = 3;
+                }
             }
         }
-        if (distanceToLeft >= 0.95)
+        if (distanceToLeft >= 3.70)
         {
             alignment = -1;
-            if (distanceToLeft >= 0.99)
+            if (distanceToLeft >= 3.73)
             {
                 alignment = -2;
-        
             }
         }
 
@@ -224,7 +240,10 @@ void loop()
             goForward(-leftMotorSpeed + 20, rightMotorSpeed);
             break;
         case 2:
-            goForward(-leftMotorSpeed + 50, rightMotorSpeed);
+            goForward(-leftMotorSpeed + 40, rightMotorSpeed);
+            break;
+        case 3:
+            goForward(-leftMotorSpeed + 60, rightMotorSpeed);
             break;
         case -1:
             goForward(-leftMotorSpeed, rightMotorSpeed - 40);
