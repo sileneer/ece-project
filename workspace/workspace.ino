@@ -195,24 +195,21 @@ void loop()
         Serial.println("distanceToLeft: " + String(distanceToLeft));
         // Serial.println("distanceToRight: " + String(distanceToRight));
 
-        if (distanceToRight <= 10 && distanceToRight != -1)
+        if (distanceToRight <= 9 && distanceToRight != -1)
         {
             alignment = 1;
-            if (distanceToRight <= 8)
+            if (distanceToRight <= 7)
             {
                 alignment = 2;
             }
         }
-        if (distanceToLeft >= 0.99)
+        if (distanceToLeft >= 0.95)
         {
             alignment = -1;
-            if (distanceToLeft >= 1.03)
+            if (distanceToLeft >= 0.99)
             {
                 alignment = -2;
-                if (distanceToLeft >= 1.04)
-                {
-                    alignment = -3;
-                }
+        
             }
         }
 
@@ -233,10 +230,7 @@ void loop()
             goForward(-leftMotorSpeed, rightMotorSpeed - 40);
             break;
         case -2:
-            goForward(-leftMotorSpeed, rightMotorSpeed - 70);
-            break;
-        case -3:
-            goForward(-leftMotorSpeed, rightMotorSpeed - 90);
+            goForward(-leftMotorSpeed, rightMotorSpeed - 80);
             break;
         default:
             goForward(-leftMotorSpeed, rightMotorSpeed);
