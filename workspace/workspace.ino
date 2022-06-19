@@ -37,6 +37,14 @@ const int goStraightTime = 850;
 // the maximum spped of the motor
 const uint8_t motorSpeed = 255;
 
+// the alignment of the mBot in the maze, according to the distance to the left and right wall
+// -2: left, -1: slightly left, 0: center, 1: slightly right, 2: right, 3: extreme right
+int alignment;
+
+// the distance of mBot to the left and right wall
+float distanceToLeft;
+float distanceToRight;
+
 /**
  * Identifier for each colour:
  * 1: blue
@@ -54,12 +62,12 @@ const uint8_t motorSpeed = 255;
 void redTurn()
 {
     // Turning left (on the spot):
-    leftMotor.run(motorSpeed);  // Positive: wheel turns clockwise
-    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
-    delay(TURNING_TIME_MS);     // Keep turning left for this time duration
-    leftMotor.stop();           // Stop left motor
-    rightMotor.stop();          // Stop right motor
-    delay(10);                  // Stop for 1000 ms
+    leftMotor.run(motorSpeed);
+    rightMotor.run(motorSpeed);
+    delay(TURNING_TIME_MS);
+    leftMotor.stop();
+    rightMotor.stop();
+    delay(10);
 }
 
 /**
@@ -69,12 +77,12 @@ void redTurn()
 void greenTurn()
 {
     // turning right on the spot
-    leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
-    rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
-    delay(TURNING_TIME_MS);      // Keep turning left for this time duration
-    leftMotor.stop();            // Stop left motor
-    rightMotor.stop();           // Stop right motor
-    delay(10);                   // Stop for 1000 ms
+    leftMotor.run(-motorSpeed);
+    rightMotor.run(-motorSpeed);
+    delay(TURNING_TIME_MS);
+    leftMotor.stop();
+    rightMotor.stop();
+    delay(10);
 }
 
 /**
@@ -85,23 +93,23 @@ void orangeTurn()
 {
     if (ultrasonicDistance() >= 10)
     {
-        // 180 degree turn within the same grid
-        leftMotor.run(-motorSpeed + 15); // Positive: wheel turns clockwise
-        rightMotor.run(-motorSpeed);     // Positive: wheel turns clockwise
-        delay(2 * TURNING_TIME_MS);      // Keep turning left for this time duration
-        leftMotor.stop();                // Stop left motor
-        rightMotor.stop();               // Stop right motor
-        delay(10);                       // Stop for 1000 ms
+        // 180 degree right turn within the same grid
+        leftMotor.run(-motorSpeed + 15);
+        rightMotor.run(-motorSpeed);
+        delay(2 * TURNING_TIME_MS);
+        leftMotor.stop();
+        rightMotor.stop();
+        delay(10);
     }
     else
     {
-        // 180 degree turn within the same grid
-        leftMotor.run(motorSpeed - 15); // Positive: wheel turns clockwise
-        rightMotor.run(motorSpeed);     // Positive: wheel turns clockwise
-        delay(2 * TURNING_TIME_MS);     // Keep turning left for this time duration
-        leftMotor.stop();               // Stop left motor
-        rightMotor.stop();              // Stop right motor
-        delay(10);                      // Stop for 1000 ms
+        // 180 degree left turn within the same grid
+        leftMotor.run(motorSpeed - 15);
+        rightMotor.run(motorSpeed);
+        delay(2 * TURNING_TIME_MS);
+        leftMotor.stop();
+        rightMotor.stop();
+        delay(10);
     }
 }
 
@@ -112,26 +120,27 @@ void orangeTurn()
 void purpleTurn()
 {
     // two successive left turns in two grids
-    leftMotor.run(motorSpeed);  // Positive: wheel turns clockwise
-    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
-    delay(TURNING_TIME_MS);     // Keep turning left for this time duration
-    leftMotor.stop();           // Stop left motor
-    rightMotor.stop();          // Stop right motor
-    delay(5);                   // Stop for 1000 ms
+    // turn left
+    leftMotor.run(motorSpeed);
+    rightMotor.run(motorSpeed);
+    delay(TURNING_TIME_MS);
+    leftMotor.stop();
+    rightMotor.stop();
+    delay(5);
     // go forward
-    leftMotor.run(-motorSpeed);  // Negative: wheel turns anti-clockwise
-    rightMotor.run(motorSpeed);  // Positive: wheel turns clockwise
-    delay(goStraightTime + 100); // Keep going straight for 1000 ms
-    leftMotor.stop();            // Stop left motor
-    rightMotor.stop();           // Stop right motor
-    delay(5);                    // Stop for 1000 ms
+    leftMotor.run(-motorSpeed);
+    rightMotor.run(motorSpeed);
+    delay(goStraightTime + 100);
+    leftMotor.stop();
+    rightMotor.stop();
+    delay(5);
     // turn left again
-    leftMotor.run(motorSpeed);   // Positive: wheel turns clockwise
-    rightMotor.run(motorSpeed);  // Positive: wheel turns clockwise
-    delay(TURNING_TIME_MS + 20); // Keep turning left for this time duration
-    leftMotor.stop();            // Stop left motor
-    rightMotor.stop();           // Stop right motor
-    delay(5);                    // Stop for 1000 ms
+    leftMotor.run(motorSpeed);
+    rightMotor.run(motorSpeed);
+    delay(TURNING_TIME_MS + 20);
+    leftMotor.stop();
+    rightMotor.stop();
+    delay(5);
 }
 
 /**
@@ -141,26 +150,27 @@ void purpleTurn()
 void blueTurn()
 {
     // two successive right turns in two grids
-    leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
-    rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
-    delay(TURNING_TIME_MS + 20); // Keep turning left for this time duration
-    leftMotor.stop();            // Stop left motor
-    rightMotor.stop();           // Stop right motor
-    delay(5);                    // Stop for 1000 ms
+    // turn right
+    leftMotor.run(-motorSpeed);
+    rightMotor.run(-motorSpeed);
+    delay(TURNING_TIME_MS + 20);
+    leftMotor.stop();
+    rightMotor.stop();
+    delay(5);
     // go forward
-    leftMotor.run(-motorSpeed); // Negative: wheel turns anti-clockwise
-    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
-    delay(goStraightTime);      // Keep going straight for 1000 ms
-    leftMotor.stop();           // Stop left motor
-    rightMotor.stop();          // Stop right motor
-    delay(5);                   // Stop for 1000 ms
-    // turn left again
-    leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
-    rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
-    delay(TURNING_TIME_MS + 20); // Keep turning left for this time duration
-    leftMotor.stop();            // Stop left motor
-    rightMotor.stop();           // Stop right motor
-    delay(5);                    // Stop for 1000 ms
+    leftMotor.run(-motorSpeed);
+    rightMotor.run(motorSpeed);
+    delay(goStraightTime);
+    leftMotor.stop();
+    rightMotor.stop();
+    delay(5);
+    // turn right again
+    leftMotor.run(-motorSpeed);
+    rightMotor.run(-motorSpeed);
+    delay(TURNING_TIME_MS + 20);
+    leftMotor.stop();
+    rightMotor.stop();
+    delay(5);
 }
 
 /**
@@ -237,102 +247,6 @@ void goForward(int leftSpeed, int rightSpeed)
     leftMotor.run(leftSpeed);
     rightMotor.run(rightSpeed);
     delay(30);
-}
-
-/**
- * @brief Set up mBot's pinMode and Serial Monitor
- *
- */
-void setup()
-{
-    // begin serial communication
-    Serial.begin(9600);
-    pinMode(INPUT_2A, OUTPUT);
-    pinMode(INPUT_2B, OUTPUT);
-
-    pinMode(IR_DETECTOR_INTERFACE, INPUT);
-    pinMode(LDR_INTERFACE, INPUT);
-    pinMode(LINE_SENSOR_INTERFACE, INPUT);
-}
-
-/**
- * @brief The main loop of the mBot; it is used to control the mBot by detecting the black line and the distance to the left and right wall.
- *
- */
-void loop()
-{
-
-    // line sensor
-    lineSensorOutput = digitalRead(LINE_SENSOR_INTERFACE);
-
-    if (lineSensorOutput == HIGH)
-    {
-
-        int alignment = 0; // -2: left, -1: slightly left, 0: center, 1: slightly right, 2: right, 3: extreme right
-
-        float distanceToLeft = irDistance();
-        float distanceToRight = ultrasonicDistance();
-
-        // Serial.println("distanceToLeft: " + String(distanceToLeft));
-        // Serial.println("distanceToRight: " + String(distanceToRight));
-
-        if (distanceToRight <= 9 && distanceToRight != -1)
-        {
-            alignment = 1;
-            if (distanceToRight <= 7)
-            {
-                alignment = 2;
-                if (distanceToRight <= 6)
-                {
-                    alignment = 3;
-                }
-            }
-        }
-        if (distanceToLeft >= 3.70)
-        {
-            alignment = -1;
-            if (distanceToLeft >= 3.73)
-            {
-                alignment = -2;
-            }
-        }
-
-        // Serial.println("alignment: " + String(alignment));
-
-        switch (alignment)
-        {
-        case 0:
-            goForward(-motorSpeed, motorSpeed);
-            break;
-        case 1:
-            goForward(-motorSpeed + 20, motorSpeed);
-            break;
-        case 2:
-            goForward(-motorSpeed + 50, motorSpeed);
-            break;
-        case 3:
-            goForward(-motorSpeed + 60, motorSpeed);
-            break;
-        case -1:
-            goForward(-motorSpeed, motorSpeed - 40);
-            break;
-        case -2:
-            goForward(-motorSpeed, motorSpeed - 80);
-            break;
-        default:
-            goForward(-motorSpeed, motorSpeed);
-            break;
-        }
-    }
-    else if (lineSensorOutput == LOW)
-    {                      // If push button is pushed, the value will be very low
-        leftMotor.stop();  // Stop left motor
-        rightMotor.stop(); // Stop right motor
-        delay(10);         // Delay 500ms so that a button push won't be counted multiple times.
-        int currentColour = getColour();
-        // Serial.println(currentColour);
-        executeTurning(getColour()); // get the colour and execute the turning function
-    }
 }
 
 /**
@@ -576,4 +490,112 @@ void celebrate()
     buzzer.tone(highD, yipai);
     buzzer.tone(highC, yipai * 3);
     buzzer.noTone();
+}
+
+// -----------------------------setup and main loop---------------------------------
+
+/**
+ * @brief Set up mBot's pinMode and Serial Monitor
+ *
+ */
+void setup()
+{
+    // begin serial communication
+    Serial.begin(9600);
+    pinMode(INPUT_2A, OUTPUT);
+    pinMode(INPUT_2B, OUTPUT);
+
+    pinMode(IR_DETECTOR_INTERFACE, INPUT);
+    pinMode(LDR_INTERFACE, INPUT);
+    pinMode(LINE_SENSOR_INTERFACE, INPUT);
+}
+
+/**
+ * @brief The main loop of the mBot; it is used to control the mBot by detecting the black line and the distance to the left and right wall.
+ *
+ */
+void loop()
+{
+
+    // define the line sensor
+    lineSensorOutput = digitalRead(LINE_SENSOR_INTERFACE);
+
+    // when not detecting the black line
+    if (lineSensorOutput == HIGH)
+    {
+        // initialise the alignment
+        alignment = 0;
+
+        // get the distance to the left and right wall
+        distanceToLeft = irDistance();
+        distanceToRight = ultrasonicDistance();
+
+        // Serial.println("distanceToLeft: " + String(distanceToLeft));
+        // Serial.println("distanceToRight: " + String(distanceToRight));
+
+        // change the alignment of mBot in the maze, according to the IR sensor and ultrasonic sensor
+        if (distanceToRight <= 9 && distanceToRight != -1)
+        {
+            alignment = 1;
+            if (distanceToRight <= 7)
+            {
+                alignment = 2;
+                if (distanceToRight <= 6)
+                {
+                    alignment = 3;
+                }
+            }
+        }
+        if (distanceToLeft >= 3.70)
+        {
+            alignment = -1;
+            if (distanceToLeft >= 3.73)
+            {
+                alignment = -2;
+            }
+        }
+
+        // Serial.println("alignment: " + String(alignment));
+
+        // make the mBot go forward accroding to the current alignment
+        switch (alignment)
+        {
+        case 0:
+            goForward(-motorSpeed, motorSpeed);
+            break;
+        case 1:
+            goForward(-motorSpeed + 20, motorSpeed);
+            break;
+        case 2:
+            goForward(-motorSpeed + 50, motorSpeed);
+            break;
+        case 3:
+            goForward(-motorSpeed + 60, motorSpeed);
+            break;
+        case -1:
+            goForward(-motorSpeed, motorSpeed - 40);
+            break;
+        case -2:
+            goForward(-motorSpeed, motorSpeed - 80);
+            break;
+        default:
+            goForward(-motorSpeed, motorSpeed);
+            break;
+        }
+    }
+
+    // when detecting the black line
+    else if (lineSensorOutput == LOW)
+    {
+        leftMotor.stop();  // Stop left motor
+        rightMotor.stop(); // Stop right motor
+        delay(10);
+
+        // get the colour below the mBot
+        int currentColour = getColour();
+        // Serial.println(currentColour);
+
+        // execute turning according to the colour detected
+        executeTurning(getColour()); // get the colour and execute the turning function
+    }
 }
