@@ -25,8 +25,8 @@ MeDCMotor leftMotor(M1);  // assigning leftMotor to port M1
 MeDCMotor rightMotor(M2); // assigning RightMotor to port M2
 int goStraightTime = 850;
 
-const uint8_t leftMotorSpeed = 225;
-const uint8_t rightMotorSpeed = 255;
+const uint8_t motorSpeed = 225;
+const uint8_t motorSpeed = 255;
 const uint8_t motorSpeed = 255;
 
 // red: 3
@@ -89,12 +89,12 @@ void purpleTurn()
     rightMotor.stop();          // Stop right motor
     delay(5);                   // Stop for 1000 ms
     // go forward
-    leftMotor.run(-leftMotorSpeed);  // Negative: wheel turns anti-clockwise
-    rightMotor.run(rightMotorSpeed); // Positive: wheel turns clockwise
-    delay(goStraightTime + 100);     // Keep going straight for 1000 ms
-    leftMotor.stop();                // Stop left motor
-    rightMotor.stop();               // Stop right motor
-    delay(5);                        // Stop for 1000 ms
+    leftMotor.run(-motorSpeed);  // Negative: wheel turns anti-clockwise
+    rightMotor.run(motorSpeed);  // Positive: wheel turns clockwise
+    delay(goStraightTime + 100); // Keep going straight for 1000 ms
+    leftMotor.stop();            // Stop left motor
+    rightMotor.stop();           // Stop right motor
+    delay(5);                    // Stop for 1000 ms
     // turn left again
     leftMotor.run(motorSpeed);   // Positive: wheel turns clockwise
     rightMotor.run(motorSpeed);  // Positive: wheel turns clockwise
@@ -115,12 +115,12 @@ void blueTurn()
     rightMotor.stop();           // Stop right motor
     delay(5);                    // Stop for 1000 ms
     // go forward
-    leftMotor.run(-leftMotorSpeed);  // Negative: wheel turns anti-clockwise
-    rightMotor.run(rightMotorSpeed); // Positive: wheel turns clockwise
-    delay(goStraightTime);           // Keep going straight for 1000 ms
-    leftMotor.stop();                // Stop left motor
-    rightMotor.stop();               // Stop right motor
-    delay(5);                        // Stop for 1000 ms
+    leftMotor.run(-motorSpeed); // Negative: wheel turns anti-clockwise
+    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
+    delay(goStraightTime);      // Keep going straight for 1000 ms
+    leftMotor.stop();           // Stop left motor
+    rightMotor.stop();          // Stop right motor
+    delay(5);                   // Stop for 1000 ms
     // turn left again
     leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
     rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
@@ -200,12 +200,12 @@ void loop()
     if (lineSensorOutput == HIGH)
     {
 
-        int alignment = 0; // -2: extreme left, -1: left, 0: center, 1: right, 2: extreme right
+        int alignment = 0; // -2: left, -1: slightly left, 0: center, 1: slightly right, 2: right, 3: extreme right
 
         float distanceToLeft = irDistance();
         float distanceToRight = ultrasonicDistance();
 
-        Serial.println("distanceToLeft: " + String(distanceToLeft));
+        // Serial.println("distanceToLeft: " + String(distanceToLeft));
         // Serial.println("distanceToRight: " + String(distanceToRight));
 
         if (distanceToRight <= 9 && distanceToRight != -1)
@@ -229,30 +229,30 @@ void loop()
             }
         }
 
-        Serial.println("alignment: " + String(alignment));
+        // Serial.println("alignment: " + String(alignment));
 
         switch (alignment)
         {
         case 0:
-            goForward(-leftMotorSpeed, rightMotorSpeed);
+            goForward(-motorSpeed, motorSpeed);
             break;
         case 1:
-            goForward(-leftMotorSpeed + 20, rightMotorSpeed);
+            goForward(-motorSpeed + 20, motorSpeed);
             break;
         case 2:
-            goForward(-leftMotorSpeed + 40, rightMotorSpeed);
+            goForward(-motorSpeed + 50, motorSpeed);
             break;
         case 3:
-            goForward(-leftMotorSpeed + 60, rightMotorSpeed);
+            goForward(-motorSpeed + 60, motorSpeed);
             break;
         case -1:
-            goForward(-leftMotorSpeed, rightMotorSpeed - 40);
+            goForward(-motorSpeed, motorSpeed - 40);
             break;
         case -2:
-            goForward(-leftMotorSpeed, rightMotorSpeed - 80);
+            goForward(-motorSpeed, motorSpeed - 80);
             break;
         default:
-            goForward(-leftMotorSpeed, rightMotorSpeed);
+            goForward(-motorSpeed, motorSpeed);
             break;
         }
     }
@@ -262,7 +262,7 @@ void loop()
         rightMotor.stop(); // Stop right motor
         delay(10);         // Delay 500ms so that a button push won't be counted multiple times.
         int currentColour = getColour();
-        Serial.println(currentColour);
+        // Serial.println(currentColour);
         executeTurning(getColour()); // get the colour and execute the turning function
     }
 }
@@ -306,7 +306,7 @@ void executeTurning(int detectedColour)
 
 int getColour()
 {
-    Serial.println("Put the colour down ...");
+    // Serial.println("Put the colour down ...");
 
     int redValue = turnOnRed();
     delay(5);
@@ -390,8 +390,8 @@ int turnOnRed()
 
     delay(RGBWait);
     int red = getAvgReading(5); // scan 5 times and return the average,
-    Serial.print("Red = ");
-    Serial.println(red);
+    // Serial.print("Red = ");
+    // Serial.println(red);
     return red;
 }
 
@@ -402,8 +402,8 @@ int turnOnBlue()
 
     delay(RGBWait);
     int blue = getAvgReading(5); // scan 5 times and return the average,
-    Serial.print("Blue = ");
-    Serial.println(blue);
+    // Serial.print("Blue = ");
+    // Serial.println(blue);
     return blue;
 }
 
@@ -414,8 +414,8 @@ int turnOnGreen()
 
     delay(RGBWait);
     int green = getAvgReading(5); // scan 5 times and return the average,
-    Serial.print("Green = ");
-    Serial.println(green);
+    // Serial.print("Green = ");
+    // Serial.println(green);
     return green;
 }
 

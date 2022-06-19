@@ -1,5 +1,6 @@
 #include "MeMCore.h"
 
+// define the pins
 #define INPUT_2A A0
 #define INPUT_2B A1
 #define IR_DETECTOR_INTERFACE A2
@@ -8,28 +9,48 @@
 #define LINE_SENSOR_INTERFACE 10
 #define ULTRASONIC_INTERFACE 12
 
-#define TURNING_TIME_MS 355 // The time duration (ms) for turning
+// The time duration (ms) for turning
+#define TURNING_TIME_MS 355
 
-#define TIMEOUT 2000       // Max microseconds to wait; choose according to max distance of wall
-#define SPEED_OF_SOUND 340 // Update according to your own experiment
+// Max microseconds to wait; choose according to max distance of wall
+#define TIMEOUT 2000
 
+// constant speed of the sound
+#define SPEED_OF_SOUND 340
+
+// define the waiting time for LDR and LED
 #define LDRWait 10  // in milliseconds
 #define RGBWait 200 // in milliseconds
 
+// define buzzer, lineFinder, and motors
 MeBuzzer buzzer;
 MeLineFollower lineFinder(PORT_2); // assigning lineFinder to RJ25 port 2
+MeDCMotor leftMotor(M1);           // assigning leftMotor to port M1
+MeDCMotor rightMotor(M2);          // assigning RightMotor to port M2
 
+// the output of the line sensor; HIGH when not detecting the black line, LOW when detecting the black line
 float lineSensorOutput;
 
-MeDCMotor leftMotor(M1);  // assigning leftMotor to port M1
-MeDCMotor rightMotor(M2); // assigning RightMotor to port M2
-int goStraightTime = 850;
+// the time to go straight when making two successtive turns
+const int goStraightTime = 850;
 
-const uint8_t leftMotorSpeed = 225;
-const uint8_t rightMotorSpeed = 255;
+// the maximum spped of the motor
 const uint8_t motorSpeed = 255;
 
-// red: 3
+/**
+ * Identifier for each colour:
+ * 1: blue
+ * 2: orange
+ * 3: red
+ * 4: green
+ * 5: purple
+ * 6: white
+ */
+
+/**
+ * @brief Make the robot turn left when detecting the red colour.
+ *
+ */
 void redTurn()
 {
     // Turning left (on the spot):
@@ -41,7 +62,10 @@ void redTurn()
     delay(10);                  // Stop for 1000 ms
 }
 
-// green: 4
+/**
+ * @brief This function is used to make the robot turn right when detecting the green colour.
+ *
+ */
 void greenTurn()
 {
     // turning right on the spot
@@ -53,7 +77,10 @@ void greenTurn()
     delay(10);                   // Stop for 1000 ms
 }
 
-// orange: 2
+/**
+ * @brief Make the robot make a 180 degree turn when detecting the blue colour.
+ * @remark When the distance to the right wall is larger than 10cm, it will turn right first. Otherwise, it will turn left first.
+ */
 void orangeTurn()
 {
     if (ultrasonicDistance() >= 10)
@@ -78,7 +105,10 @@ void orangeTurn()
     }
 }
 
-// purple: 5
+/**
+ * @brief Make the robot turn left successively in two grids when detecting the purple colour.
+ *
+ */
 void purpleTurn()
 {
     // two successive left turns in two grids
@@ -89,12 +119,12 @@ void purpleTurn()
     rightMotor.stop();          // Stop right motor
     delay(5);                   // Stop for 1000 ms
     // go forward
-    leftMotor.run(-leftMotorSpeed);  // Negative: wheel turns anti-clockwise
-    rightMotor.run(rightMotorSpeed); // Positive: wheel turns clockwise
-    delay(goStraightTime + 100);     // Keep going straight for 1000 ms
-    leftMotor.stop();                // Stop left motor
-    rightMotor.stop();               // Stop right motor
-    delay(5);                        // Stop for 1000 ms
+    leftMotor.run(-motorSpeed);  // Negative: wheel turns anti-clockwise
+    rightMotor.run(motorSpeed);  // Positive: wheel turns clockwise
+    delay(goStraightTime + 100); // Keep going straight for 1000 ms
+    leftMotor.stop();            // Stop left motor
+    rightMotor.stop();           // Stop right motor
+    delay(5);                    // Stop for 1000 ms
     // turn left again
     leftMotor.run(motorSpeed);   // Positive: wheel turns clockwise
     rightMotor.run(motorSpeed);  // Positive: wheel turns clockwise
@@ -104,7 +134,10 @@ void purpleTurn()
     delay(5);                    // Stop for 1000 ms
 }
 
-// blue: 1
+/**
+ * @brief Make the robot turn right successively in two grids when detecting the blue colour.
+ *
+ */
 void blueTurn()
 {
     // two successive right turns in two grids
@@ -115,12 +148,12 @@ void blueTurn()
     rightMotor.stop();           // Stop right motor
     delay(5);                    // Stop for 1000 ms
     // go forward
-    leftMotor.run(-leftMotorSpeed);  // Negative: wheel turns anti-clockwise
-    rightMotor.run(rightMotorSpeed); // Positive: wheel turns clockwise
-    delay(goStraightTime);           // Keep going straight for 1000 ms
-    leftMotor.stop();                // Stop left motor
-    rightMotor.stop();               // Stop right motor
-    delay(5);                        // Stop for 1000 ms
+    leftMotor.run(-motorSpeed); // Negative: wheel turns anti-clockwise
+    rightMotor.run(motorSpeed); // Positive: wheel turns clockwise
+    delay(goStraightTime);      // Keep going straight for 1000 ms
+    leftMotor.stop();           // Stop left motor
+    rightMotor.stop();          // Stop right motor
+    delay(5);                   // Stop for 1000 ms
     // turn left again
     leftMotor.run(-motorSpeed);  // Positive: wheel turns clockwise
     rightMotor.run(-motorSpeed); // Positive: wheel turns clockwise
@@ -130,6 +163,22 @@ void blueTurn()
     delay(5);                    // Stop for 1000 ms
 }
 
+/**
+ * @brief Play the sound of the buzzer when detecting the white colour.
+ *
+ * @return int
+ */
+void whiteFinish()
+{
+    celebrate();
+    delay(1000000);
+}
+
+/**
+ * @brief Detect the distance to the right wall using the ultrasonic sensor.
+ *
+ * @return float the distance to the wall in cm; -1 when the distance is not available
+ */
 float ultrasonicDistance()
 {
     pinMode(ULTRASONIC_INTERFACE, OUTPUT);
@@ -151,6 +200,11 @@ float ultrasonicDistance()
     }
 }
 
+/**
+ * @brief Detect the distance to the left wall using a IR sensor.
+ *
+ * @return float the difference in the voltage with IR on and with IR off
+ */
 float irDistance()
 {
     digitalWrite(INPUT_2A, HIGH);
@@ -172,6 +226,12 @@ float irDistance()
     return initial_reading - final_reading;
 }
 
+/**
+ * @brief Make the robot go forward given the left and right motor speed.
+ *
+ * @param leftSpeed the speed of the left motor
+ * @param rightSpeed the speed of the right motor
+ */
 void goForward(int leftSpeed, int rightSpeed)
 {
     leftMotor.run(leftSpeed);
@@ -179,6 +239,10 @@ void goForward(int leftSpeed, int rightSpeed)
     delay(30);
 }
 
+/**
+ * @brief Set up mBot's pinMode and Serial Monitor
+ *
+ */
 void setup()
 {
     // begin serial communication
@@ -191,6 +255,10 @@ void setup()
     pinMode(LINE_SENSOR_INTERFACE, INPUT);
 }
 
+/**
+ * @brief The main loop of the mBot; it is used to control the mBot by detecting the black line and the distance to the left and right wall.
+ *
+ */
 void loop()
 {
 
@@ -205,7 +273,7 @@ void loop()
         float distanceToLeft = irDistance();
         float distanceToRight = ultrasonicDistance();
 
-        Serial.println("distanceToLeft: " + String(distanceToLeft));
+        // Serial.println("distanceToLeft: " + String(distanceToLeft));
         // Serial.println("distanceToRight: " + String(distanceToRight));
 
         if (distanceToRight <= 9 && distanceToRight != -1)
@@ -229,30 +297,30 @@ void loop()
             }
         }
 
-        Serial.println("alignment: " + String(alignment));
+        // Serial.println("alignment: " + String(alignment));
 
         switch (alignment)
         {
         case 0:
-            goForward(-leftMotorSpeed, rightMotorSpeed);
+            goForward(-motorSpeed, motorSpeed);
             break;
         case 1:
-            goForward(-leftMotorSpeed + 20, rightMotorSpeed);
+            goForward(-motorSpeed + 20, motorSpeed);
             break;
         case 2:
-            goForward(-leftMotorSpeed + 40, rightMotorSpeed);
+            goForward(-motorSpeed + 50, motorSpeed);
             break;
         case 3:
-            goForward(-leftMotorSpeed + 60, rightMotorSpeed);
+            goForward(-motorSpeed + 60, motorSpeed);
             break;
         case -1:
-            goForward(-leftMotorSpeed, rightMotorSpeed - 40);
+            goForward(-motorSpeed, motorSpeed - 40);
             break;
         case -2:
-            goForward(-leftMotorSpeed, rightMotorSpeed - 80);
+            goForward(-motorSpeed, motorSpeed - 80);
             break;
         default:
-            goForward(-leftMotorSpeed, rightMotorSpeed);
+            goForward(-motorSpeed, motorSpeed);
             break;
         }
     }
@@ -262,11 +330,16 @@ void loop()
         rightMotor.stop(); // Stop right motor
         delay(10);         // Delay 500ms so that a button push won't be counted multiple times.
         int currentColour = getColour();
-        Serial.println(currentColour);
+        // Serial.println(currentColour);
         executeTurning(getColour()); // get the colour and execute the turning function
     }
 }
 
+/**
+ * @brief Execute the turning of mBot according to the colour detected. Called when the line sensor detects a black line.
+ *
+ * @param detectedColour 1: blue; 2: orange; 3: red; 4: green; 5: purple; 6: white
+ */
 void executeTurning(int detectedColour)
 {
     switch (detectedColour)
@@ -295,18 +368,16 @@ void executeTurning(int detectedColour)
     }
 }
 
-/* return:
- * 1: blue
- * 2: orange
- * 3: red
- * 4: green
- * 5: purple
- * 6: white
+/**
+ * @brief Use the LDR to detect the colour of the paper below, and return the colour
+ *
+ * @remark The colour detected and the standard reference colours are stored in 1*3 matrices. The colours are then mapped into a 3d space. The smallest distances between the colour detected and the standard reference colour is used to compare and determine the colour.
+ *
+ * @return int 1: blue; 2: orange; 3: red; 4: green; 5: purple; 6: white
  */
-
 int getColour()
 {
-    Serial.println("Put the colour down ...");
+    // Serial.println("Put the colour down ...");
 
     int redValue = turnOnRed();
     delay(5);
@@ -340,23 +411,16 @@ int getColour()
             minIndex = i;
         }
     }
-
-    // if (minIndex == 1 || minIndex == 2)
-    // {
-    //     int orangeDifference = abs(readings[2] - calibratedReadings[1][2]);
-    //     int redDifference = abs(readings[2] - calibratedReadings[2][2]);
-    //     if (orangeDifference < redDifference)
-    //     {
-    //         return 2;
-    //     }
-    //     else
-    //     {
-    //         return 3;
-    //     }
-    // }
     return minIndex + 1;
 }
 
+/**
+ * @brief Calculate the distance between two colours in a 3d space.
+ *
+ * @param readings the coordinates of the colour to detected
+ * @param calibratedReadings the coordinates of the standard reference colour
+ * @return float the distance between these two colours in a 3d space
+ */
 float calculateDistance(int *readings, int *calibratedReadings)
 {
     float distance = 0;
@@ -367,6 +431,12 @@ float calculateDistance(int *readings, int *calibratedReadings)
     return sqrt(distance);
 }
 
+/**
+ * @brief Get the average reading of the LDR
+ *
+ * @param times the number of readings
+ * @return int the average reading of the LDR
+ */
 int getAvgReading(int times)
 {
     // find the average reading for the requested number of times of scanning LDR
@@ -383,6 +453,11 @@ int getAvgReading(int times)
     return total / times;
 }
 
+/**
+ * @brief Turn on the red LED and read the LDR values
+ *
+ * @return int the reading of LDR when red LED is turned on
+ */
 int turnOnRed()
 {
     digitalWrite(INPUT_2A, HIGH);
@@ -390,11 +465,16 @@ int turnOnRed()
 
     delay(RGBWait);
     int red = getAvgReading(5); // scan 5 times and return the average,
-    Serial.print("Red = ");
-    Serial.println(red);
+    // Serial.print("Red = ");
+    // Serial.println(red);
     return red;
 }
 
+/**
+ * @brief Turn on the blue LED and read the LDR values
+ *
+ * @return int the reading of LDR when blue LED is turned on
+ */
 int turnOnBlue()
 {
     digitalWrite(INPUT_2A, HIGH);
@@ -402,11 +482,16 @@ int turnOnBlue()
 
     delay(RGBWait);
     int blue = getAvgReading(5); // scan 5 times and return the average,
-    Serial.print("Blue = ");
-    Serial.println(blue);
+    // Serial.print("Blue = ");
+    // Serial.println(blue);
     return blue;
 }
 
+/**
+ * @brief Turn on the green LED and read the LDR values
+ *
+ * @return int the reading of LDR when green LED is turned on
+ */
 int turnOnGreen()
 {
     digitalWrite(INPUT_2A, LOW);
@@ -414,17 +499,15 @@ int turnOnGreen()
 
     delay(RGBWait);
     int green = getAvgReading(5); // scan 5 times and return the average,
-    Serial.print("Green = ");
-    Serial.println(green);
+    // Serial.print("Green = ");
+    // Serial.println(green);
     return green;
 }
 
-int whiteFinish()
-{
-    celebrate();
-    delay(1000000);
-}
-
+/**
+ * @brief Play the music
+ *
+ */
 void celebrate()
 {
     // Each of the following "function calls" plays a single tone.
